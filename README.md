@@ -1,5 +1,7 @@
 # pet-room
 
+[![CI](https://github.com/hamon1/pet-room/actions/workflows/ci.yml/badge.svg)](https://github.com/hamon1/pet-room/actions/workflows/ci.yml)
+
 반려동물의 건강·의료·먹이를 한곳에서 관리하고, 놓치기 쉬운 일정(의료·투약·유통기한·재구매)을 달력과 알림으로 챙겨 주는 펫케어 웹앱입니다.
 도트 그래픽의 방 안에서 내 반려동물이 돌아다니는 **방치형 육성 게임** 감성을 목표로 합니다.
 
@@ -80,4 +82,4 @@ pet-room/
 
 ## 기록
 
-- 트러블슈팅과 운영 기록은 진행하면서 `docs/troubleshooting/`에 추가합니다.
+- 트러블슈팅과 운영 기록: [docs/troubleshooting](docs/troubleshooting/)
