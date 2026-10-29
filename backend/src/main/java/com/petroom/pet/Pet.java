@@ -118,6 +118,10 @@ public class Pet {
         return birthDate;
     }
 
+    public boolean isTank() {
+        return managementType == ManagementType.TANK;
+    }
+
     public boolean isBirthDateEstimated() {
         return birthDateEstimated;
     }
