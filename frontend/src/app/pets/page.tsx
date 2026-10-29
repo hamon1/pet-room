@@ -3,14 +3,17 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { api, ApiError, errorMessage, tokenStore } from "@/lib/api";
+import { api, ApiError, errorMessage, logout } from "@/lib/api";
 import { ageLabel, CATEGORY_LABEL, kindLabel, type Pet } from "@/lib/pets";
 import PetSprite from "@/components/PetSprite";
+import QuickRecordSheet from "@/components/QuickRecordSheet";
 
 export default function PetsPage() {
   const router = useRouter();
   const [pets, setPets] = useState<Pet[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [quickOpen, setQuickOpen] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -26,8 +29,8 @@ export default function PetsPage() {
     };
   }, [router]);
 
-  function logout() {
-    tokenStore.clear();
+  async function onLogout() {
+    await logout();
     router.replace("/login");
   }
 
@@ -41,6 +44,7 @@ export default function PetsPage() {
       </div>
 
       {error && <p className="error" role="alert">{error}</p>}
+      {notice && <p className="notice" role="status">{notice}</p>}
       {!pets && !error && <p className="muted">불러오는 중…</p>}
 
       {pets && pets.length === 0 && (
@@ -54,27 +58,43 @@ export default function PetsPage() {
       )}
 
       {pets && pets.length > 0 && (
-        <div className="grid-2">
-          {pets.map((p) => (
-            <article key={p.id} className="card" style={{ alignItems: "center", textAlign: "center" }}>
-              <PetSprite category={p.category} subCategory={p.subCategory} size={64} />
-              <h2>{p.name}</h2>
-              <div className="row wrap" style={{ justifyContent: "center" }}>
-                <span className="chip">{kindLabel(p)}</span>
-                {ageLabel(p) && <span className="chip">{ageLabel(p)}</span>}
-              </div>
-              <span className="muted small">{p.species ?? CATEGORY_LABEL[p.category]}</span>
-            </article>
-          ))}
-        </div>
+        <>
+          <button className="btn block" onClick={() => setQuickOpen(true)}>
+            빠른 기록 · 오늘 모두 한 번에
+          </button>
+          <div className="grid-2">
+            {pets.map((p) => (
+              <Link key={p.id} href={`/pets/${p.id}`} className="card" style={{ alignItems: "center", textAlign: "center" }}>
+                <PetSprite category={p.category} subCategory={p.subCategory} size={64} />
+                <h2>{p.name}</h2>
+                <div className="row wrap" style={{ justifyContent: "center" }}>
+                  <span className="chip">{kindLabel(p)}</span>
+                  {ageLabel(p) && <span className="chip">{ageLabel(p)}</span>}
+                </div>
+                <span className="muted small">{p.species ?? CATEGORY_LABEL[p.category]}</span>
+              </Link>
+            ))}
+          </div>
+        </>
       )}
 
       <p className="muted small" style={{ margin: 0 }}>
-        메인 방 화면, 기록, 달력은 다음 단계에서 이어집니다.
+        메인 방 화면, 먹이, 달력은 다음 단계에서 이어집니다.
       </p>
-      <button className="link" onClick={logout}>
+      <button className="link" onClick={onLogout}>
         로그아웃
       </button>
+
+      {quickOpen && pets && (
+        <QuickRecordSheet
+          pets={pets}
+          onClose={() => setQuickOpen(false)}
+          onSaved={(msg) => {
+            setQuickOpen(false);
+            setNotice(msg);
+          }}
+        />
+      )}
     </>
   );
 }
