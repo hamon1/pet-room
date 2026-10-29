@@ -1,0 +1,15 @@
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+*.iml
+
+# backend
+backend/.gradle/
+backend/build/
+backend/out/
+backend/bin/
+
+# env
+.env
+.env.local
