@@ -34,6 +34,10 @@ jobs:
           grep -E "error:|FAILED|Caused by|Exception" gradle-output.txt | grep -v "^\s*at " | head -10 | while IFS= read -r line; do
             echo "::error title=backend::${line}"
           done
+          # 실패한 테스트의 단언 메시지 (테스트 결과 XML)
+          grep -ho '<failure message="[^"]*' build/test-results/test/*.xml 2>/dev/null | sed 's/<failure message="//' | head -10 | while IFS= read -r line; do
+            echo "::error title=assertion::${line:0:300}"
+          done
       - name: Upload test report
         if: failure()
         uses: actions/upload-artifact@v4

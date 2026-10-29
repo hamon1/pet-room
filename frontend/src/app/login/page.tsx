@@ -30,7 +30,7 @@ export default function LoginPage() {
         body: JSON.stringify(body),
       });
       tokenStore.save(res);
-      router.replace("/pets");
+      router.replace("/");
     } catch (err) {
       setError(errorMessage(err));
     } finally {

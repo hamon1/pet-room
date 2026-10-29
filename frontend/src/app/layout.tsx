@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
+import ThemeSync from "@/components/ThemeSync";
 
 export const metadata: Metadata = {
   title: "pet-room",
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
       </head>
       <body>
+        <ThemeSync />
         <main className="phone">{children}</main>
       </body>
     </html>
