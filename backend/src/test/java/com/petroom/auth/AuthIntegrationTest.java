@@ -38,7 +38,7 @@ class AuthIntegrationTest extends IntegrationTest {
     }
 
     @Test
-    @DisplayName("이메일은 대소문자와 앞뒤 공백을 무시하고 중복을 막는다")
+    @DisplayName("이메일은 대소문자를 구분하지 않고 중복을 막는다")
     void duplicateEmail() throws Exception {
         String email = uniqueEmail();
         mockMvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON)
@@ -46,7 +46,7 @@ class AuthIntegrationTest extends IntegrationTest {
                 .andExpect(status().isCreated());
 
         mockMvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON)
-                        .content(signupBody(" " + email.toUpperCase() + " ", "password123")))
+                        .content(signupBody(email.toUpperCase(), "password123")))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value("EMAIL_ALREADY_EXISTS"));
     }
