@@ -36,7 +36,7 @@
 | 401 | `INVALID_REFRESH_TOKEN` | 리프레시 토큰 없음·만료·이미 사용됨 |
 | 401 | `OAUTH_FAILED` | 소셜 로그인 제공자에서 실패 (인가 코드 만료 등) |
 | 404 | `PET_NOT_FOUND` | 없거나 내 반려동물이 아님 |
-| 404 | `HEALTH_RECORD_NOT_FOUND` · `MEDICAL_RECORD_NOT_FOUND` · `SPECIAL_RECORD_NOT_FOUND` · `FISH_NOT_FOUND` | 해당 기록 없음 |
+| 404 | `HEALTH_RECORD_NOT_FOUND` · `MEDICAL_RECORD_NOT_FOUND` · `SPECIAL_RECORD_NOT_FOUND` · `FISH_NOT_FOUND` · `FOOD_NOT_FOUND` | 해당 기록·먹이 없음 |
 | 409 | `EMAIL_ALREADY_EXISTS` | 이미 가입된 이메일 |
 
 ## 인증
