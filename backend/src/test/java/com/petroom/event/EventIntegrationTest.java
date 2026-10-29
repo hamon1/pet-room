@@ -44,7 +44,7 @@ class EventIntegrationTest extends IntegrationTest {
                 {"kind":"VACCINATION","recordDate":"%s","content":"종합백신","nextDate":"%s"}
                 """.formatted(TODAY, TODAY.plusDays(1)));
         postJson("/api/pets/" + dog + "/medical-records", """
-                {"kind":"MEDICATION","recordDate":"%s","nextDate":"%s"}
+                {"kind":"MEDICATION","recordDate":"%s","content":"심장사상충약","nextDate":"%s"}
                 """.formatted(TODAY, TODAY.plusDays(20)));
         // 하루 100g, 남은 300g → 3일 뒤 소진, 유통기한 2일 뒤
         postJson("/api/foods", """
