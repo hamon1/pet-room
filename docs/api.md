@@ -28,6 +28,7 @@
 | 400 | `INVALID_RECORD` | 오늘 이후 날짜, 빈 기록, 어항·개체에 맞지 않는 항목 |
 | 400 | `INVALID_SPECIAL_ITEM` | 분류에 없는 특수 항목 |
 | 400 | `NOT_A_TANK` | 어항 단위가 아닌 반려동물에 물고기 추가 |
+| 400 | `INVALID_FOOD` | 남은 양이 전체 양보다 많음, 급여량 없이 급여 차감 |
 | 400 | `OAUTH_PROVIDER_DISABLED` | 앱 키가 설정되지 않은 소셜 로그인 |
 | 400 | `INVALID_REDIRECT_URI` | 허용되지 않은 소셜 로그인 콜백 주소 |
 | 401 | `UNAUTHORIZED` | 액세스 토큰 없음·만료·위조 |
@@ -167,7 +168,7 @@
 ```
 - `kind`: `VISIT`(진료), `VACCINATION`(접종), `MEDICATION`(투약), `TREATMENT`(치료)
 - `recordDate`는 오늘 이후 불가, `nextDate`는 `recordDate` 이후만 가능
-- 투약·치료의 다음 예정일은 "치료 정보", 진료·접종은 "의료 일정" 주요 이벤트가 됩니다 (3단계).
+- 투약·치료의 다음 예정일은 "치료 정보", 진료·접종은 "의료 일정" 주요 이벤트가 됩니다.
 
 ### ✅ GET /api/pets/{petId}/medical-records · PUT, DELETE /api/pets/{petId}/medical-records/{id}
 
@@ -204,12 +205,69 @@
 ```
 어항 단위(`TANK`) 반려동물만 가능. 종명을 비우면 어항의 종을 씁니다.
 
+## 먹이 재고
+
+### ✅ GET /api/foods · POST /api/foods
+```json
+{ "name": "사료 A", "type": "FEED", "expiryDate": "2027-04-30", "openedDate": null,
+  "totalG": 2000, "remainingG": 1000, "perServingG": 50, "timesPerDay": 2, "petIds": [1, 2] }
+```
+- 필수: `name`, `expiryDate`. `type` 기본값 `FEED`(사료) / `TREAT`(간식)
+- `totalG`를 비우면 처음 입력한 남은 양을 전체 양으로 봅니다. 남은 양 > 전체 양이면 400 `INVALID_FOOD`
+- `petIds`: 같은 먹이를 먹는 반려동물 (여러 마리 공유 재고). 다른 사용자의 반려동물이면 404
+- 응답에 계산값 포함: `dailyUseG` = 1회 급여량 × 하루 횟수 × 먹는 동물 수(최소 1), `runoutDate` = 오늘 + ⌊남은 양 ÷ 하루 사용량⌋. 계산할 수 없으면 `null`
+
+### ✅ PUT, DELETE /api/foods/{id}
+### ✅ PATCH /api/foods/{id}/remaining
+`{ "remainingG": 300 }` → 남은 양만 수정. 전체 양보다 많으면 전체 양을 늘립니다.
+
+### ✅ POST /api/foods/{id}/feed
+1회 급여: 남은 양에서 1회 급여량 × 먹는 동물 수를 뺍니다 (0 아래로 내려가지 않음). 급여량·남은 양이 없으면 400 `INVALID_FOOD`
+
+## 주요 이벤트
+
+저장하지 않고 의료 기록과 먹이 재고에서 계산합니다.
+
+| type | 이름 | 출처 | 날짜 |
+| --- | --- | --- | --- |
+| `MEDICAL` | 의료 일정 | 진료·접종 기록 | `nextDate` |
+| `TREATMENT` | 치료 정보 | 투약·치료 기록 | `nextDate` |
+| `EXPIRY` | 유통기한 임박 | 먹이 | `expiryDate` |
+| `REBUY` | 재구매 필요 | 먹이 | `runoutDate` |
+
+```json
+{ "type": "MEDICAL", "date": "2026-10-30", "daysUntil": 1, "alert": true,
+  "title": "코코 접종 · 종합백신", "petIds": [1], "medicalRecordId": 3, "foodId": null }
+```
+- `alert`: `0 ≤ daysUntil ≤ 알림 시점(설정)`. 유통기한·재구매는 이미 지난 경우(`daysUntil < 0`)도 `true`
+
+### ✅ GET /api/events?from=&to=
+기간 내 이벤트, 날짜순. 기본 오늘부터 30일, 최대 366일.
+
+### ✅ GET /api/events/alerts
+지금 알려야 하는 이벤트 (메인 화면 "주요 이벤트" 배지)
+
+## 달력
+
+### ✅ GET /api/calendar?month=YYYY-MM
+이벤트나 기록이 있는 날만 → `{ "month": "2026-10", "days": [{ "date": "2026-10-29", "eventTypes": ["MEDICAL"], "recordCount": 2 }] }`
+`recordCount` = 그날의 건강·의료·특수 항목 기록 수 (모든 반려동물)
+
+### ✅ GET /api/calendar/days/{date}
+`{ "date", "events": [...], "health": [...], "medical": [...], "special": [...] }`
+
+## 설정
+
+### ✅ GET, PUT /api/users/me/settings
+```json
+{ "medicalNoticeDays": 1, "treatmentNoticeDays": 0, "expiryNoticeDays": 3, "rebuyNoticeDays": 5, "theme": "PASTEL" }
+```
+- 알림 시점: 이벤트 며칠 전부터 알림 대상으로 볼지 (0~30, 0은 당일). 위 값이 기본값
+- `theme`: `PASTEL`(파스텔) / `MONOCHROME`(블랙 앤 화이트)
+- 바꾼 적이 없으면 저장하지 않고 기본값을 돌려줍니다.
+
 ## 예정 (⏳)
 
 | 단계 | 엔드포인트 | 설명 |
 | --- | --- | --- |
-| 3 | `GET/POST/PATCH/DELETE /api/foods` | 먹이 재고, 급여 차감, 남은 양 수정 |
-| 3 | `GET /api/events?from=&to=` | 주요 이벤트(계산값) |
-| 3 | `GET /api/calendar?month=YYYY-MM` | 날짜별 이벤트·기록 요약 |
-| 3 | `GET/PUT /api/users/me/settings` | 알림 시점, 색상 테마 |
 | 4 | `POST /api/push-subscriptions` | 웹 푸시 구독 |
