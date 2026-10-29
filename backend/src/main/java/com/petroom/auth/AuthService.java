@@ -39,12 +39,21 @@ public class AuthService {
         return tokenService.issue(user.getId());
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public TokenResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(normalize(request.email()))
+                .filter(User::hasPassword)
                 .filter(u -> passwordEncoder.matches(request.password(), u.getPasswordHash()))
                 .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_CREDENTIALS));
         return tokenService.issue(user.getId());
+    }
+
+    public TokenResponse refresh(RefreshRequest request) {
+        return tokenService.rotate(request.refreshToken());
+    }
+
+    public void logout(RefreshRequest request) {
+        tokenService.revoke(request.refreshToken());
     }
 
     private static String normalize(String email) {

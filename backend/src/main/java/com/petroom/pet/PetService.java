@@ -16,10 +16,12 @@ public class PetService {
     private static final BigDecimal DAYS_PER_YEAR = BigDecimal.valueOf(365);
 
     private final PetRepository petRepository;
+    private final OwnedPets ownedPets;
     private final Clock clock;
 
-    public PetService(PetRepository petRepository, Clock clock) {
+    public PetService(PetRepository petRepository, OwnedPets ownedPets, Clock clock) {
         this.petRepository = petRepository;
+        this.ownedPets = ownedPets;
         this.clock = clock;
     }
 
@@ -54,10 +56,8 @@ public class PetService {
         petRepository.delete(findOwned(ownerId, petId));
     }
 
-    /** 다른 사용자의 반려동물도 "없음"으로 응답해 id 존재 여부를 드러내지 않습니다. */
     private Pet findOwned(Long ownerId, Long petId) {
-        return petRepository.findByIdAndOwnerId(petId, ownerId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.PET_NOT_FOUND));
+        return ownedPets.load(ownerId, petId);
     }
 
     PetProfile toProfile(PetRequest request) {

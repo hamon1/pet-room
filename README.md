@@ -5,7 +5,7 @@
 반려동물의 건강·의료·먹이를 한곳에서 관리하고, 놓치기 쉬운 일정(의료·투약·유통기한·재구매)을 달력과 알림으로 챙겨 주는 펫케어 웹앱입니다.
 도트 그래픽의 방 안에서 내 반려동물이 돌아다니는 **방치형 육성 게임** 감성을 목표로 합니다.
 
-> 현재 단계: **1단계 - 기반 구축** (설계 문서, 백엔드·프론트엔드 골격, 회원가입·로그인, 반려동물 등록 API)
+> 현재 단계: **2단계 - 기록** (건강·의료·특수 항목 기록, 빠른 기록, 리프레시 토큰, 카카오·구글 로그인)
 > 전체 계획은 [docs/roadmap.md](docs/roadmap.md)를 참고하세요.
 
 ## 핵심 기능 (MVP)
@@ -29,7 +29,7 @@ flowchart LR
   PUSH -.-> U
 ```
 
-자세한 내용: [docs/architecture.md](docs/architecture.md) · [docs/erd.md](docs/erd.md) · [docs/api.md](docs/api.md) · [docs/decisions.md](docs/decisions.md)
+자세한 내용: [docs/architecture.md](docs/architecture.md) · [docs/erd.md](docs/erd.md) · [docs/api.md](docs/api.md) · [docs/decisions.md](docs/decisions.md) · [docs/setup-oauth.md](docs/setup-oauth.md)
 
 ## 기술 스택
 
@@ -55,6 +55,8 @@ docker compose up -d
 # 2. 백엔드 (http://localhost:8080)
 cd backend
 ./gradlew bootRun
+
+# 소셜 로그인을 쓰려면 docs/setup-oauth.md의 환경변수를 먼저 지정
 
 # 3. 프론트엔드 (http://localhost:3000)
 cd frontend
