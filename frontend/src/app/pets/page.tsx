@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { api, ApiError, errorMessage, logout } from "@/lib/api";
+import { api, ApiError, errorMessage } from "@/lib/api";
 import { ageLabel, CATEGORY_LABEL, kindLabel, type Pet } from "@/lib/pets";
 import PetSprite from "@/components/PetSprite";
 import QuickRecordSheet from "@/components/QuickRecordSheet";
+import BackLink from "@/components/BackLink";
 
 export default function PetsPage() {
   const router = useRouter();
@@ -29,13 +30,9 @@ export default function PetsPage() {
     };
   }, [router]);
 
-  async function onLogout() {
-    await logout();
-    router.replace("/login");
-  }
-
   return (
     <>
+      <BackLink />
       <div className="row between">
         <h1>반려동물 목록</h1>
         <Link className="btn primary" href="/pets/new">
@@ -78,12 +75,6 @@ export default function PetsPage() {
         </>
       )}
 
-      <p className="muted small" style={{ margin: 0 }}>
-        메인 방 화면, 먹이, 달력은 다음 단계에서 이어집니다.
-      </p>
-      <button className="link" onClick={onLogout}>
-        로그아웃
-      </button>
 
       {quickOpen && pets && (
         <QuickRecordSheet
