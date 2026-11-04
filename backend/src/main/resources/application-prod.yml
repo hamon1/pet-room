@@ -1,0 +1,16 @@
+# 운영 프로필: SPRING_PROFILES_ACTIVE=prod
+# 필수 환경변수: DB_URL, DB_USERNAME, DB_PASSWORD, JWT_SECRET, CORS_ALLOWED_ORIGINS
+# 선택: OAUTH_ALLOWED_REDIRECT_URIS, KAKAO_*/GOOGLE_* (없으면 소셜 로그인 비활성), PUSH_VAPID_* (없으면 웹 푸시 비활성)
+server:
+  # HTTPS를 끝내는 프록시(로드밸런서) 뒤에서 원래 주소·프로토콜을 인식
+  forward-headers-strategy: framework
+
+logging:
+  structured:
+    format:
+      # 로그 수집 서비스가 읽기 쉬운 JSON 한 줄 형식 (요청 ID 등 MDC 포함)
+      console: ecs
+
+spring:
+  jpa:
+    show-sql: false

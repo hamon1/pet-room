@@ -5,7 +5,7 @@
 반려동물의 건강·의료·먹이를 한곳에서 관리하고, 놓치기 쉬운 일정(의료·투약·유통기한·재구매)을 달력과 알림으로 챙겨 주는 펫케어 웹앱입니다.
 도트 그래픽의 방 안에서 내 반려동물이 돌아다니는 **방치형 육성 게임** 감성을 목표로 합니다.
 
-> 현재 단계: **3단계 - 먹이·달력** (먹이 재고, 주요 이벤트·달력, 알림 시점·테마 설정, 메인 방 화면)
+> 현재 단계: **4단계 - 배포·운영** (웹 푸시, 운영 설정·로그, Docker 이미지 완료 / 호스팅 결정 대기)
 > 전체 계획은 [docs/roadmap.md](docs/roadmap.md)를 참고하세요.
 
 ## 핵심 기능 (MVP)
@@ -25,11 +25,11 @@ flowchart LR
   U[사용자<br/>모바일·PC 브라우저] -->|HTTPS| FE[frontend<br/>Next.js PWA]
   FE -->|REST JSON + JWT| BE[backend<br/>Spring Boot API]
   BE --> DB[(PostgreSQL)]
-  BE -.->|2단계 이후| PUSH[Web Push]
+  BE -.->|매일 알림| PUSH[Web Push]
   PUSH -.-> U
 ```
 
-자세한 내용: [docs/architecture.md](docs/architecture.md) · [docs/erd.md](docs/erd.md) · [docs/api.md](docs/api.md) · [docs/decisions.md](docs/decisions.md) · [docs/setup-oauth.md](docs/setup-oauth.md)
+자세한 내용: [docs/architecture.md](docs/architecture.md) · [docs/deploy.md](docs/deploy.md) · [docs/erd.md](docs/erd.md) · [docs/api.md](docs/api.md) · [docs/decisions.md](docs/decisions.md) · [docs/setup-oauth.md](docs/setup-oauth.md)
 
 ## 기술 스택
 

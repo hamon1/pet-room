@@ -38,6 +38,10 @@ jobs:
           grep -ho '<failure message="[^"]*' build/test-results/test/*.xml 2>/dev/null | sed 's/<failure message="//' | head -10 | while IFS= read -r line; do
             echo "::error title=assertion::${line:0:300}"
           done
+          # 테스트 중 서버 로그에 남은 예외 (500 원인 확인용)
+          grep -h -oE "[A-Za-z0-9_.$]+(Exception|Error): [^<&]{0,240}" build/test-results/test/*.xml 2>/dev/null | grep -v "AssertionError\|AssertionFailedError" | sort | uniq -c | sort -rn | head -10 | while IFS= read -r line; do
+            echo "::error title=server-exception::${line:0:300}"
+          done
       - name: Upload test report
         if: failure()
         uses: actions/upload-artifact@v4
@@ -90,7 +94,10 @@ jobs:
         run: |
           ./gradlew bootJar --no-daemon
           JAR=$(ls build/libs/*.jar | grep -v plain)
-          nohup java -jar "$JAR" > "$RUNNER_TEMP/backend.log" 2>&1 &
+          # 운영 프로필로 실행해 운영 설정(구조화 로그, 비밀키 검사)도 함께 확인
+          SPRING_PROFILES_ACTIVE=prod JWT_SECRET="e2e-$(openssl rand -hex 32)" \
+            CORS_ALLOWED_ORIGINS=http://localhost:3000 \
+            nohup java -jar "$JAR" > "$RUNNER_TEMP/backend.log" 2>&1 &
           for i in $(seq 60); do curl -sf localhost:8080/actuator/health > /dev/null && break; sleep 2; done
           curl -sf localhost:8080/actuator/health
       - uses: actions/setup-node@v5
@@ -106,7 +113,9 @@ jobs:
         run: |
           npm ci
           npm run build
-          nohup npx next start -p 3000 > "$RUNNER_TEMP/frontend.log" 2>&1 &
+          # 배포와 같은 standalone 실행 파일로 띄움
+          cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/
+          PORT=3000 nohup node .next/standalone/server.js > "$RUNNER_TEMP/frontend.log" 2>&1 &
           npx playwright install --with-deps chromium
           for i in $(seq 30); do curl -sf localhost:3000/login > /dev/null && break; sleep 2; done
       - name: Run E2E
@@ -115,6 +124,36 @@ jobs:
       - name: Report server errors as annotations
         if: failure()
         run: |
-          grep -E "ERROR|Exception" "$RUNNER_TEMP/backend.log" | head -10 | while IFS= read -r line; do
+          tail -c 20000 "$RUNNER_TEMP/backend.log" | grep -E "ERROR|Exception" | head -10 | while IFS= read -r line; do
             echo "::error title=backend-log::${line:0:300}"
           done
+      - name: Check structured request logs
+        run: |
+          # 운영 로그가 JSON 한 줄 형식이고 요청 ID가 들어가는지 확인
+          grep 'logger":"http"' "$RUNNER_TEMP/backend.log" | head -1 | tee /dev/stderr | grep -q '"requestId"'
+
+  docker:
+    name: Docker images
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build backend image
+        run: docker build -t pet-room-backend backend
+      - name: Build frontend image
+        run: docker build -t pet-room-frontend --build-arg NEXT_PUBLIC_API_BASE_URL=https://api.example.com frontend
+      - name: Smoke test frontend image
+        run: |
+          docker run -d --name fe -p 3000:3000 pet-room-frontend
+          for i in $(seq 20); do curl -sf localhost:3000/login > /dev/null && break; sleep 1; done
+          curl -sf localhost:3000/login > /dev/null
+          curl -sfI localhost:3000/sw.js | grep -i "cache-control: no-cache"
+      - name: Backend image refuses to start without settings
+        run: |
+          # prod 프로필: DB·JWT_SECRET 없이 실행하면 멈춰야 함 (설정 누락을 배포 단계에서 바로 발견)
+          set +e
+          timeout 90 docker run --rm pet-room-backend > out.log 2>&1
+          code=$?
+          set -e
+          echo "exit code: $code"
+          test "$code" -ne 0 && test "$code" -ne 124
+          grep -m1 -oE "JWT_SECRET[^\"]{0,80}|Connection to [^ ]+ refused" out.log || true

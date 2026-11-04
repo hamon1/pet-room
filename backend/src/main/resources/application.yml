@@ -19,6 +19,12 @@ spring:
 server:
   error:
     include-message: never
+  shutdown: graceful
+
+logging:
+  pattern:
+    # 로그 한 줄마다 요청 ID를 붙여 같은 요청의 로그를 묶어 볼 수 있게 합니다.
+    level: "%5p [%X{requestId:-}]"
 
 management:
   endpoints:
@@ -45,3 +51,10 @@ app:
     google:
       client-id: ${GOOGLE_CLIENT_ID:}
       client-secret: ${GOOGLE_CLIENT_SECRET:}
+  push:
+    # 웹 푸시(VAPID) 키. 셋 중 하나라도 없으면 웹 푸시는 비활성화됩니다. 키 생성: docs/deploy.md
+    vapid-public-key: ${PUSH_VAPID_PUBLIC_KEY:}
+    vapid-private-key: ${PUSH_VAPID_PRIVATE_KEY:}
+    subject: ${PUSH_VAPID_SUBJECT:}
+    # 매일 알림 시각 (한국 시간)
+    cron: ${PUSH_CRON:0 0 9 * * *}
