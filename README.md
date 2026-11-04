@@ -71,6 +71,16 @@ npm run dev
 cd backend && ./gradlew test
 ```
 
+전체 흐름 E2E 테스트 (백엔드 :8080, 프론트엔드 :3000을 먼저 실행한 상태에서):
+
+```bash
+cd frontend
+npx playwright install chromium   # 최초 1회
+npx playwright test
+```
+
+가입 → 반려동물 등록 → 빠른 기록 → 먹이 등록·급여 → 주요 이벤트 → 달력 → 테마·알림 시점 → 로그아웃을 실제 서버로 확인합니다. CI에서도 PostgreSQL·백엔드·프론트엔드를 띄워 매번 실행합니다.
+
 ## 폴더 구조
 
 ```

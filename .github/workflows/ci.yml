@@ -63,3 +63,58 @@ jobs:
       - run: npm run build
         env:
           NEXT_TELEMETRY_DISABLED: "1"
+
+  e2e:
+    name: E2E (real backend + DB)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: petroom
+          POSTGRES_USER: petroom
+          POSTGRES_PASSWORD: petroom
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U petroom"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v5
+      - name: Start backend
+        working-directory: backend
+        run: |
+          ./gradlew bootJar --no-daemon
+          JAR=$(ls build/libs/*.jar | grep -v plain)
+          nohup java -jar "$JAR" > "$RUNNER_TEMP/backend.log" 2>&1 &
+          for i in $(seq 60); do curl -sf localhost:8080/actuator/health > /dev/null && break; sleep 2; done
+          curl -sf localhost:8080/actuator/health
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Start frontend
+        working-directory: frontend
+        env:
+          NEXT_PUBLIC_API_BASE_URL: http://localhost:8080
+          NEXT_TELEMETRY_DISABLED: "1"
+        run: |
+          npm ci
+          npm run build
+          nohup npx next start -p 3000 > "$RUNNER_TEMP/frontend.log" 2>&1 &
+          npx playwright install --with-deps chromium
+          for i in $(seq 30); do curl -sf localhost:3000/login > /dev/null && break; sleep 2; done
+      - name: Run E2E
+        working-directory: frontend
+        run: npx playwright test
+      - name: Report server errors as annotations
+        if: failure()
+        run: |
+          grep -E "ERROR|Exception" "$RUNNER_TEMP/backend.log" | head -10 | while IFS= read -r line; do
+            echo "::error title=backend-log::${line:0:300}"
+          done
