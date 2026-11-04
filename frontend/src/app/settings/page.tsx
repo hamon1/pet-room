@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import BackLink from "@/components/BackLink";
+import PushCard from "@/components/PushCard";
 import Seg from "@/components/Seg";
 import { api, errorMessage, logout } from "@/lib/api";
 import { applyTheme, THEME_LABEL, type Settings, type Theme } from "@/lib/settings";
@@ -63,6 +64,7 @@ export default function SettingsPage() {
               ariaLabel="색상 테마"
             />
           </div>
+          <PushCard />
           <form
             className="card"
             onSubmit={(e) => {
