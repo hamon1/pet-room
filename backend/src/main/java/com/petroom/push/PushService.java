@@ -45,7 +45,7 @@ public class PushService {
     }
 
     public void unsubscribe(Long userId, String endpoint) {
-        repository.deleteByEndpointAndUserId(endpoint, userId);
+        repository.deleteOwned(endpoint, userId);
     }
 
     static boolean allowedEndpoint(String endpoint) {

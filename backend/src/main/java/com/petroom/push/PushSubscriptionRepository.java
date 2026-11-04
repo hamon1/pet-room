@@ -17,8 +17,10 @@ public interface PushSubscriptionRepository extends JpaRepository<PushSubscripti
     @Query("select distinct s.userId from PushSubscription s")
     List<Long> findSubscribedUserIds();
 
+    @Modifying
     @Transactional
-    long deleteByEndpointAndUserId(String endpoint, Long userId);
+    @Query("delete from PushSubscription s where s.endpoint = :endpoint and s.userId = :userId")
+    int deleteOwned(String endpoint, Long userId);
 
     /** 오늘 처음이면 1, 이미 보냈으면 0. 서버가 여러 대여도 한 번만 보내도록 DB 기본키로 막습니다. */
     @Modifying
