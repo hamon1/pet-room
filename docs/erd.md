@@ -8,6 +8,7 @@ MVP 전체 테이블 설계입니다. 단계별로 Flyway 마이그레이션을 
 | V2 | 2 | `health_records`, `medical_records`, `special_records`, `tank_fish` |
 | V3 | 2 | `refresh_tokens`, `social_accounts` (소셜 사용자를 위해 `users.email`, `password_hash` nullable) |
 | V4 | 3 | `foods`, `food_pets`, `user_settings` |
+| V5 | 4 | `push_subscriptions`, `push_deliveries` |
 
 ```mermaid
 erDiagram
@@ -20,6 +21,8 @@ erDiagram
   pets ||--o{ health_records : has
   pets ||--o{ medical_records : has
   pets ||--o{ special_records : has
+  users ||--o{ push_subscriptions : "receives push"
+  users ||--o{ push_deliveries : "was notified"
   foods ||--o{ food_pets : "eaten by"
   pets ||--o{ food_pets : eats
 
@@ -105,6 +108,17 @@ erDiagram
   food_pets {
     bigint food_id PK
     bigint pet_id PK
+  }
+  push_subscriptions {
+    bigint id PK
+    bigint user_id FK
+    varchar endpoint UK "브라우저 푸시 서비스 주소"
+    varchar p256dh "브라우저 공개키"
+    varchar auth
+  }
+  push_deliveries {
+    bigint user_id PK
+    date sent_date PK "하루 한 번 발송 보장"
   }
   user_settings {
     bigint user_id PK

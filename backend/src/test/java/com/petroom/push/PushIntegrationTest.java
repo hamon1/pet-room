@@ -3,7 +3,8 @@ package com.petroom.push;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -70,10 +71,10 @@ class PushIntegrationTest extends IntegrationTest {
     void setUp() throws Exception {
         bearer = signupAndGetBearer();
         endpoint = "https://fcm.googleapis.com/fcm/send/" + UUID.randomUUID();
-        when(sender.send(any(), anyString())).thenAnswer(inv -> {
+        doAnswer(inv -> {
             sentTo.add(((PushSubscription) inv.getArgument(0)).getEndpoint());
             return 201;
-        });
+        }).when(sender).send(any(), anyString());
     }
 
     private String subscription(String url) {
@@ -138,7 +139,7 @@ class PushIntegrationTest extends IntegrationTest {
     void goneSubscriptionIsRemoved() throws Exception {
         subscribe();
         foodExpiringTomorrow();
-        when(sender.send(any(), anyString())).thenReturn(410);
+        doReturn(410).when(sender).send(any(), anyString());
         notifier.run();
         assertThat(subscriptions.findByEndpoint(endpoint)).isEmpty();
     }

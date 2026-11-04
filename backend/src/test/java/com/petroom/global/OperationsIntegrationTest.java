@@ -9,10 +9,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.petroom.support.IntegrationTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Import(OperationsIntegrationTest.BoomController.class)
 class OperationsIntegrationTest extends IntegrationTest {
 
     /** 테스트에서만 등록되는, 예상하지 못한 오류를 내는 엔드포인트 */

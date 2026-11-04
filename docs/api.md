@@ -28,6 +28,7 @@
 | 400 | `INVALID_RECORD` | 오늘 이후 날짜, 빈 기록, 어항·개체에 맞지 않는 항목 |
 | 400 | `INVALID_SPECIAL_ITEM` | 분류에 없는 특수 항목 |
 | 400 | `NOT_A_TANK` | 어항 단위가 아닌 반려동물에 물고기 추가 |
+| 400 | `INVALID_PUSH_SUBSCRIPTION` | 지원하지 않는 푸시 서비스 주소, 잘못된 구독 키 |
 | 400 | `INVALID_FOOD` | 남은 양이 전체 양보다 많음, 급여량 없이 급여 차감 |
 | 400 | `OAUTH_PROVIDER_DISABLED` | 앱 키가 설정되지 않은 소셜 로그인 |
 | 400 | `INVALID_REDIRECT_URI` | 허용되지 않은 소셜 로그인 콜백 주소 |
@@ -37,6 +38,8 @@
 | 401 | `OAUTH_FAILED` | 소셜 로그인 제공자에서 실패 (인가 코드 만료 등) |
 | 404 | `PET_NOT_FOUND` | 없거나 내 반려동물이 아님 |
 | 404 | `HEALTH_RECORD_NOT_FOUND` · `MEDICAL_RECORD_NOT_FOUND` · `SPECIAL_RECORD_NOT_FOUND` · `FISH_NOT_FOUND` · `FOOD_NOT_FOUND` | 해당 기록·먹이 없음 |
+| 404 | `PUSH_DISABLED` | 서버에 웹 푸시 키가 설정되지 않음 |
+| 500 | `INTERNAL_ERROR` | 예상하지 못한 오류. 응답의 `requestId`로 서버 로그를 찾음 |
 | 409 | `EMAIL_ALREADY_EXISTS` | 이미 가입된 이메일 |
 
 ## 인증
@@ -266,8 +269,25 @@
 - `theme`: `PASTEL`(파스텔) / `MONOCHROME`(블랙 앤 화이트)
 - 바꾼 적이 없으면 저장하지 않고 기본값을 돌려줍니다.
 
-## 예정 (⏳)
+## 웹 푸시
 
-| 단계 | 엔드포인트 | 설명 |
-| --- | --- | --- |
-| 4 | `POST /api/push-subscriptions` | 웹 푸시 구독 |
+매일 09:00(한국 시간) 알림 대상 이벤트(`/api/events/alerts`와 같은 기준)가 있는 사용자에게 요약 알림을 하루 한 번 보냅니다.
+알림 내용 예: 제목 "오늘 챙길 일 2건", 본문 "코코 접종 · 종합백신 외 1건", 누르면 `/events`로 이동.
+
+### ✅ GET /api/push/public-key
+`{ "publicKey": "<VAPID 공개키>" }`. 서버에 키가 없으면 404 `PUSH_DISABLED`
+
+### ✅ POST /api/push-subscriptions
+브라우저 `PushSubscription.toJSON()` 그대로 보냅니다. `204 No Content`
+```json
+{ "endpoint": "https://fcm.googleapis.com/fcm/send/...", "keys": { "p256dh": "...", "auth": "..." } }
+```
+- 서버가 이 주소로 직접 요청하므로 브라우저 푸시 서비스 주소(FCM, Mozilla, Apple, Windows)만 허용합니다.
+- 같은 endpoint로 다시 구독하면 갱신(마지막으로 구독한 사용자에게 연결)
+
+### ✅ DELETE /api/push-subscriptions
+`{ "endpoint": "..." }` → `204`
+
+## 공통 응답 헤더
+
+- `X-Request-Id`: 요청 ID. 요청에 안전한 형식(영문·숫자·`-`, 8~64자)의 값을 보내면 그대로 이어 씁니다.

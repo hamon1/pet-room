@@ -38,6 +38,10 @@ jobs:
           grep -ho '<failure message="[^"]*' build/test-results/test/*.xml 2>/dev/null | sed 's/<failure message="//' | head -10 | while IFS= read -r line; do
             echo "::error title=assertion::${line:0:300}"
           done
+          # 테스트 중 서버 로그에 남은 예외 (500 원인 확인용)
+          grep -h -oE "[A-Za-z0-9_.$]+(Exception|Error): [^<&]{0,240}" build/test-results/test/*.xml 2>/dev/null | grep -v "AssertionError\|AssertionFailedError" | sort | uniq -c | sort -rn | head -10 | while IFS= read -r line; do
+            echo "::error title=server-exception::${line:0:300}"
+          done
       - name: Upload test report
         if: failure()
         uses: actions/upload-artifact@v4

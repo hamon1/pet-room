@@ -12,7 +12,7 @@ flowchart LR
   end
   subgraph Backend
     API[Spring Boot REST API]
-    SCH[스케줄러<br/>알림 대상 계산 - 2단계]
+    SCH[스케줄러<br/>매일 알림 대상 계산]
   end
   DB[(PostgreSQL)]
   B --> FE
@@ -41,7 +41,9 @@ com.petroom
 ├── tank      어항 속 물고기 (2단계)
 ├── food      먹이 재고 (3단계)
 ├── event     주요 이벤트 계산, 달력 (3단계)
-└── global    보안 설정, 공통 오류 응답
+├── settings  알림 시점, 테마 (3단계)
+├── push      웹 푸시 구독, 매일 알림 (4단계)
+└── global    보안 설정, 공통 오류 응답, 요청 로그
 ```
 
 각 도메인은 `Controller → Service → Repository` 순서로 호출합니다. Controller는 요청 검증과 응답 변환만, 업무 규칙은 Service에 둡니다.
@@ -70,6 +72,6 @@ sequenceDiagram
 
 | 단계 | 대상 | 비고 |
 | --- | --- | --- |
-| 1 | 로컬 + CI | 이번 단계 |
-| 2 | 웹 배포 (PWA) | 프론트엔드 웹 호스팅, 백엔드·DB 클라우드 서버. 서비스는 가입 전 공식 가격 페이지에서 비용 확인 후 결정 |
+| 1 | 로컬 + CI | 완료 (CI: 테스트, E2E, Docker 이미지 빌드) |
+| 2 | 웹 배포 (PWA) | 호스팅 결정 대기. 준비 사항은 [deploy.md](deploy.md) |
 | 3 | 앱스토어 (선택) | 같은 프론트엔드를 Capacitor로 포장 |
