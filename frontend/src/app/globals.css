@@ -61,3 +61,21 @@ h2 { font-family: var(--f-display); font-weight: 400; font-size: 18px; margin: 0
 .pick[aria-pressed="true"] { border: 2px solid var(--accent); }
 
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* 2단계: 상세 탭, 시트, 기록 목록 */
+a.card { color: inherit; text-decoration: none; }
+.tabs { display: flex; gap: 6px; }
+.tabs button { flex: 1; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 9px 4px; font-weight: 700; font-size: 13px; cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.list-item { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.list-item > .grow { flex: 1; min-width: 0; }
+.divider { height: 1px; background: var(--line); }
+.date { font-variant-numeric: tabular-nums; color: var(--sub); font-size: 12px; min-width: 38px; }
+.chip.med { background: #fde3e3; color: #c43d3d; }
+.chip.treat { background: #ece5fa; color: #6b4cbf; }
+.chip.muted { background: #f2ece5; color: var(--sub); }
+.btn.sm { padding: 6px 12px; font-size: 13px; border-radius: 10px; }
+.sheet-backdrop { position: fixed; inset: 0; background: rgba(59, 47, 47, 0.38); display: flex; align-items: flex-end; justify-content: center; z-index: 50; }
+.sheet { width: 100%; max-width: 420px; max-height: 86vh; overflow-y: auto; background: var(--surface); border-radius: 24px 24px 0 0; padding: 16px max(20px, env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left)); display: flex; flex-direction: column; gap: 12px; }
+.sheet .card { background: var(--bg); }
+.notice { background: #ffe5da; border-radius: 12px; padding: 10px 12px; font-size: 12px; margin: 0; }

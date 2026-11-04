@@ -2,7 +2,8 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { api, errorMessage, tokenStore } from "@/lib/api";
+import { api, errorMessage, tokenStore, type TokenResponse } from "@/lib/api";
+import { isEnabled, startLogin } from "@/lib/oauth";
 import PetSprite from "@/components/PetSprite";
 
 type Mode = "login" | "signup";
@@ -24,11 +25,11 @@ export default function LoginPage() {
     setBusy(true);
     setError(null);
     try {
-      const res = await api<{ accessToken: string }>(`/api/auth/${mode}`, {
+      const res = await api<TokenResponse>(`/api/auth/${mode}`, {
         method: "POST",
         body: JSON.stringify(body),
       });
-      tokenStore.set(res.accessToken);
+      tokenStore.save(res);
       router.replace("/pets");
     } catch (err) {
       setError(errorMessage(err));
@@ -85,9 +86,25 @@ export default function LoginPage() {
       >
         {mode === "login" ? "계정이 없나요? 회원가입" : "이미 계정이 있나요? 로그인"}
       </button>
-      <p className="muted small" style={{ textAlign: "center", margin: 0 }}>
-        카카오·구글 로그인은 2단계에서 추가됩니다.
-      </p>
+      <span className="muted small" style={{ textAlign: "center" }}>
+        또는
+      </span>
+      <button
+        className="btn block"
+        style={{ background: "#FEE500", borderColor: "#FEE500", color: "#191919" }}
+        disabled={!isEnabled("kakao")}
+        onClick={() => startLogin("kakao")}
+      >
+        카카오로 시작하기
+      </button>
+      <button className="btn block" disabled={!isEnabled("google")} onClick={() => startLogin("google")}>
+        구글로 시작하기
+      </button>
+      {!isEnabled("kakao") && !isEnabled("google") && (
+        <p className="muted small" style={{ textAlign: "center", margin: 0 }}>
+          소셜 로그인은 앱 키를 설정하면 켜집니다.
+        </p>
+      )}
     </>
   );
 }

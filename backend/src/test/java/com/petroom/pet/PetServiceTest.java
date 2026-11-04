@@ -19,7 +19,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 class PetServiceTest {
 
     private final Clock clock = Clock.fixed(Instant.parse("2026-10-29T03:00:00Z"), ZoneId.of("Asia/Seoul"));
-    private final PetService service = new PetService(mock(PetRepository.class), clock);
+    private final PetService service = new PetService(mock(PetRepository.class), mock(OwnedPets.class), clock);
 
     private PetRequest request(LocalDate birthDate, BigDecimal ageYears) {
         return new PetRequest("  코코  ", PetCategory.MAMMAL, PetSubCategory.DOG, ManagementType.INDIVIDUAL,

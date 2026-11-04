@@ -1,12 +1,21 @@
 # ERD
 
-MVP 전체 테이블 설계입니다. **1단계에서 만든 테이블은 `users`, `pets` 두 개**이고, 나머지는 해당 단계에서 Flyway 마이그레이션으로 추가합니다.
+MVP 전체 테이블 설계입니다. 단계별로 Flyway 마이그레이션을 추가합니다.
+
+| 마이그레이션 | 단계 | 테이블 |
+| --- | --- | --- |
+| V1 | 1 | `users`, `pets` |
+| V2 | 2 | `health_records`, `medical_records`, `special_records`, `tank_fish` |
+| V3 | 2 | `refresh_tokens`, `social_accounts` (소셜 사용자를 위해 `users.email`, `password_hash` nullable) |
+| 예정 | 3 | `foods`, `food_pets`, `user_settings` |
 
 ```mermaid
 erDiagram
   users ||--o{ pets : owns
   users ||--|| user_settings : has
   users ||--o{ foods : owns
+  users ||--o{ refresh_tokens : has
+  users ||--o{ social_accounts : "signs in with"
   pets ||--o{ tank_fish : contains
   pets ||--o{ health_records : has
   pets ||--o{ medical_records : has
@@ -16,8 +25,8 @@ erDiagram
 
   users {
     bigint id PK
-    varchar email UK
-    varchar password_hash
+    varchar email UK "소셜 사용자는 없을 수 있음"
+    varchar password_hash "소셜 사용자는 없음"
     varchar nickname
     timestamptz created_at
   }
@@ -36,10 +45,24 @@ erDiagram
     timestamptz created_at
     timestamptz updated_at
   }
+  refresh_tokens {
+    bigint id PK
+    bigint user_id FK
+    varchar token_hash UK "SHA-256, 원문은 저장하지 않음"
+    timestamptz expires_at
+    timestamptz revoked_at
+  }
+  social_accounts {
+    bigint id PK
+    bigint user_id FK
+    varchar provider "KAKAO, GOOGLE"
+    varchar provider_user_id "provider와 함께 유일"
+  }
   tank_fish {
     bigint id PK
     bigint pet_id FK "management_type = TANK"
     varchar name
+    varchar species
   }
   health_records {
     bigint id PK
@@ -63,7 +86,7 @@ erDiagram
   special_records {
     bigint id PK
     bigint pet_id FK
-    varchar item_key "BEAK, RESPIRATORY, WATER_QUALITY ..."
+    varchar item_key "BEAK, RESPIRATORY, WATER_QUALITY ... (docs/api.md 특수 항목 표)"
     date record_date
     varchar value
   }
