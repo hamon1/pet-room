@@ -56,7 +56,7 @@ export default function NewPetPage() {
     setError(null);
     try {
       await api<Pet>("/api/pets", { method: "POST", body: JSON.stringify(body) });
-      router.replace("/pets");
+      router.replace("/");
     } catch (err) {
       setError(errorMessage(err));
     } finally {

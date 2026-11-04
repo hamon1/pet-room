@@ -7,7 +7,7 @@ MVP 전체 테이블 설계입니다. 단계별로 Flyway 마이그레이션을 
 | V1 | 1 | `users`, `pets` |
 | V2 | 2 | `health_records`, `medical_records`, `special_records`, `tank_fish` |
 | V3 | 2 | `refresh_tokens`, `social_accounts` (소셜 사용자를 위해 `users.email`, `password_hash` nullable) |
-| 예정 | 3 | `foods`, `food_pets`, `user_settings` |
+| V4 | 3 | `foods`, `food_pets`, `user_settings` |
 
 ```mermaid
 erDiagram

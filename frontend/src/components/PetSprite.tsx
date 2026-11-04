@@ -25,7 +25,7 @@ export default function PetSprite({
   };
   const rows = PATTERNS[kind];
   return (
-    <svg width={size} height={size} viewBox="0 0 9 9" shapeRendering="crispEdges" aria-hidden="true">
+    <svg className="pet-sprite" width={size} height={size} viewBox="0 0 9 9" shapeRendering="crispEdges" aria-hidden="true">
       {rows.flatMap((row, y) =>
         [...row].map((ch, x) =>
           ch === "." ? null : <rect key={`${x}-${y}`} x={x} y={y} width={1} height={1} fill={colors[ch]} />,

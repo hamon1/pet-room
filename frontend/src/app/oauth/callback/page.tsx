@@ -24,7 +24,7 @@ export default function OAuthCallbackPage() {
         body: JSON.stringify({ code, redirectUri: redirectUri() }),
       });
       tokenStore.save(tokens);
-      router.replace("/pets");
+      router.replace("/");
     };
     run().catch((e) => setError(e instanceof Error && !("code" in e) ? e.message : errorMessage(e)));
   }, [router]);

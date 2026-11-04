@@ -24,6 +24,7 @@ export interface MedicalRecord {
 
 export interface SpecialRecord {
   id: number;
+  petId: number;
   item: string;
   label: string;
   recordDate: string;
